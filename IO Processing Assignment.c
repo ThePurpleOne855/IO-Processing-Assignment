@@ -1,10 +1,10 @@
 #include <stdio.h>
 
 int main(){
-    FILE *fptr;
-    int selection;
-    char text[1000];
-    int on = 1;
+    FILE *fptr; // A pointer of type File for the file
+    int selection; // Used on Switch for the cases
+    char text[1000]; // The test is going to be input into this variable them send to the file from this variable
+    int on = 1; // Used on our while loop to keep it alive
 
     do {
         printf("1) Add words to the program.\n");
