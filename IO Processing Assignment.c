@@ -1,4 +1,7 @@
 #include <stdio.h>
+// NOTE: If any error when deleting just Ctrl + C or use type 3 in the terminal,
+// Then start the program again and attempt case 2, It should solve the problem.
+
 
 int main(){
     FILE *fptr; // A pointer of type File for the file
