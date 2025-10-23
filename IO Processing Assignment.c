@@ -1,50 +1,122 @@
 #include <stdio.h>
-// NOTE: If any error when deleting just Ctrl + C or use type 3 in the terminal,
-// Then start the program again and attempt case 2, It should solve the problem.
+#include <stdlib.h>
+#include <string.h>
 
+#define MAX_WORDS 1000
+#define MAX_LENGTH 50
 
-int main(){
-    FILE *fptr; // A pointer of type File for the file
-    int selection; // Used on Switch for the cases
-    char text[1000]; // The test is going to be input into this variable them send to the file from this variable
-    int on = 1; // Used on our while loop to keep it alive
+// Function declarations
+void loadFromBinary(char words[][MAX_LENGTH], int *wordCount);
+void saveToBinary(char words[][MAX_LENGTH], int wordCount);
+void addWord(char words[][MAX_LENGTH], int *wordCount);
+void exportToTextFile(char words[][MAX_LENGTH], int wordCount);
+void dumpAllWords(char words[][MAX_LENGTH], int *wordCount);
 
-    do {
-        printf("1) Add words to the program.\n");
-        printf("2) Dump all words from the program.\n");
-        printf("3) Exit.\n");
+int main() {
+    char words[MAX_WORDS][MAX_LENGTH];
+    int wordCount = 0;
+    int choice;
+    int running = 1;
 
-        scanf("%d", &selection);
+    // Load words from binary file if available
+    loadFromBinary(words, &wordCount);
 
-        switch(selection){
-            case 1:
-                fptr = fopen("file.txt", "a");
-                printf("Type what you want to write to the new file:\n");
-                scanf(" %[^\n]", text); // reads until a newline is found
-                fprintf(fptr, "%s\n", text);
-                fclose(fptr);
-                break;
+    printf("Welcome! Words loaded: %d\n", wordCount);
 
-            case 2:
-                if(fptr != NULL){  // close file if open
-                    fclose(fptr);
-                    fptr = NULL;
-                }
-                if(remove("file.txt") == 0){
-                    printf("Successfully Deleted\n");
-                } else{
-                    printf("Error Deleting.\n");
-                }
-                break;
-
-            case 3:
-                on = 0;
-                break;
-
-            default:
-                printf("Invalid option.\n");
+    while (running) {
+        printf("\n===== MENU =====\n");
+        printf("1) Add words\n");
+        printf("2) Create text file with all words\n");
+        printf("3) Dump all words\n");
+        printf("4) Exit\n");
+        printf("Enter your choice: ");
+        
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input. Try again.\n");
+            while (getchar() != '\n'); // clear buffer
+            continue;
         }
-    } while(on == 1);
+
+        switch (choice) {
+            case 1:
+                addWord(words, &wordCount);
+                break;
+            case 2:
+                exportToTextFile(words, wordCount);
+                break;
+            case 3:
+                dumpAllWords(words, &wordCount);
+                break;
+            case 4:
+                saveToBinary(words, wordCount);
+                printf("Exiting... All words saved.\n");
+                running = 0;
+                break;
+            default:
+                printf("Invalid option. Try again.\n");
+        }
+    }
 
     return 0;
+}
+
+// Load words from binary file
+void loadFromBinary(char words[][MAX_LENGTH], int *wordCount) {
+    FILE *fp = fopen("data.bin", "rb");
+    if (fp == NULL) {
+        printf("No existing data found. Starting fresh.\n");
+        return;
+    }
+
+    fread(wordCount, sizeof(int), 1, fp);
+    fread(words, sizeof(char), (*wordCount) * MAX_LENGTH, fp);
+    fclose(fp);
+}
+
+// Save words to binary file
+void saveToBinary(char words[][MAX_LENGTH], int wordCount) {
+    FILE *fp = fopen("data.bin", "wb");
+    if (fp == NULL) {
+        printf("Error saving data.\n");
+        return;
+    }
+
+    fwrite(&wordCount, sizeof(int), 1, fp);
+    fwrite(words, sizeof(char), wordCount * MAX_LENGTH, fp);
+    fclose(fp);
+}
+
+// Add a word to the array
+void addWord(char words[][MAX_LENGTH], int *wordCount) {
+    if (*wordCount >= MAX_WORDS) {
+        printf("Word limit reached (1000).\n");
+        return;
+    }
+
+    printf("Enter a word: ");
+    scanf("%s", words[*wordCount]);
+    (*wordCount)++;
+    printf("Word added successfully!\n");
+}
+
+// Export all words to a text file
+void exportToTextFile(char words[][MAX_LENGTH], int wordCount) {
+    FILE *fp = fopen("output.txt", "w");
+    if (fp == NULL) {
+        printf("Error creating text file.\n");
+        return;
+    }
+
+    for (int i = 0; i < wordCount; i++) {
+        fprintf(fp, "%s\n", words[i]);
+    }
+
+    fclose(fp);
+    printf("All words written to output.txt successfully.\n");
+}
+
+// Clear all stored words
+void dumpAllWords(char words[][MAX_LENGTH], int *wordCount) {
+    *wordCount = 0;
+    printf("All words deleted from memory.\n");
 }
